@@ -59,7 +59,7 @@ resource "ssh_resource" "coturn_config" {
   commands = [
     "sudo apt install docker.io -y",
     "sudo apt install coturn -y",
-    "docker run slimo300/turn-conf-generator --env TLS_PORT=5349 ${digitalocean_droplet.turn_droplet.ipv4_address} ${var.user} > /etc/turnserver.conf",
+    "docker run slimo300/turn-conf-generator ${digitalocean_droplet.turn_droplet.ipv4_address} ${var.user} > /etc/turnserver.conf",
   ]
 }
 
@@ -74,7 +74,7 @@ resource "ssh_resource" "certbot_config" {
   commands = [
     # Issuing a certififcate
     "sudo apt install certbot -y",
-    "sudo certbot certonly --noninteractive --agree-tos --register-unsafely-without-email --standalone --preferred-challenges http -d turn-around.pro",
+    "sudo certbot certonly --noninteractive --agree-tos --register-unsafely-without-email --standalone --preferred-challenges http -d ${digitalocean_domain.turn_around.name}",
 
     # Making certificate visible to coturn
     "sudo mkdir -p /etc/coturn/certs",
@@ -86,7 +86,7 @@ resource "ssh_resource" "certbot_config" {
     "sudo chmod 400 /etc/coturn/certs/${digitalocean_domain.turn_around.name}.cert /etc/coturn/certs/${digitalocean_domain.turn_around.name}.key",
 
     # Restart coturn
-    "sudo systemctl restart coturn"
+    "sudo systemctl start coturn"
   ]
 
   depends_on = [digitalocean_domain.turn_around, ssh_resource.coturn_config]
