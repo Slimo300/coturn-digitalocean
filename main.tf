@@ -31,7 +31,7 @@ data "digitalocean_ssh_key" "relrel_ssh" {
 
 resource "digitalocean_droplet" "turn_droplet" {
 
-  image = "ubuntu-23-04-x64"
+  image = "ubuntu-22-04-x64"
   name  = "turn"
 
   region = "fra1"
@@ -45,8 +45,6 @@ resource "digitalocean_domain" "turn_around" {
   name       = "turn-around.pro"
   ip_address = digitalocean_droplet.turn_droplet.ipv4_address
 }
-
-provider "ssh" {}
 
 resource "ssh_resource" "coturn_config" {
   host = digitalocean_droplet.turn_droplet.ipv4_address
@@ -73,7 +71,7 @@ resource "ssh_resource" "certbot_config" {
 
   commands = [
     # Issuing a certififcate
-    "sudo apt install certbot -y",
+    "sudo NEEDRESTART_MODE=a apt install certbot -y",
     "sudo certbot certonly --noninteractive --agree-tos --register-unsafely-without-email --standalone --preferred-challenges http -d ${digitalocean_domain.turn_around.name}",
 
     # Making certificate visible to coturn
